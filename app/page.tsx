@@ -28,6 +28,15 @@ const metricOrder: MetricKey[] = [
   "follows",
 ];
 
+const kpiMetricOrder: MetricKey[] = [
+  "follows",
+  "plays",
+  "recommends",
+  "likes",
+  "comments",
+  "shares",
+];
+
 const number = new Intl.NumberFormat("zh-CN");
 
 function sum(data: DailyMetric[], key: MetricKey) {
@@ -208,11 +217,11 @@ export default function Home() {
       </section>
 
       <section className="kpi-grid" aria-label="关键指标">
-        {metricOrder.map((key, index) => {
+        {kpiMetricOrder.map((key, index) => {
           return (
             <article className={`kpi-card ${index === 0 ? "featured" : ""}`} key={key}>
               <div className="kpi-title">
-                <span>{metricMeta[key].label}</span>
+                <span>{key === "follows" ? "粉丝数" : metricMeta[key].label}</span>
                 <i style={{ background: metricMeta[key].color }}>{metricMeta[key].short}</i>
               </div>
               <strong>{number.format(cumulativeTotals[key])}</strong>
