@@ -29,8 +29,8 @@ const metricOrder: MetricKey[] = [
 ];
 
 const kpiMetricOrder: MetricKey[] = [
-  "follows",
   "plays",
+  "follows",
   "recommends",
   "likes",
   "comments",
