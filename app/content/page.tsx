@@ -134,7 +134,7 @@ export default function ContentAnalysis() {
           <a href="/">运营总览</a>
           <a className="active" href="/content/">单篇内容</a>
         </nav>
-        <div className="data-status"><i /> 累计数据更新至 2026.08.17</div>
+        <div className="data-status"><i /> 累计数据更新至 2026.08.20</div>
       </header>
 
       <section className="content-hero">
@@ -143,7 +143,7 @@ export default function ContentAnalysis() {
           <h1>单篇内容分析</h1>
           <p>拆解 {contentData.length} 条视频的播放效率、完播表现、互动质量与关注转化，找到可复用的内容结构。</p>
         </div>
-        <div className="content-hero-stat"><span>累计单篇播放</span><strong>{number.format(allPlays)}</strong><small>2026.04.22 — 08.13</small></div>
+        <div className="content-hero-stat"><span>累计单篇播放</span><strong>{number.format(allPlays)}</strong><small>2026.04.22 — 08.20</small></div>
       </section>
 
       <section className="content-filter" aria-label="内容类型筛选">
@@ -218,7 +218,7 @@ export default function ContentAnalysis() {
         <div className="insight-title"><p className="section-kicker">CONTENT INSIGHTS</p><h2>内容策略结论</h2></div>
         <article><span>01</span><h3>太子妃系列仍是增长主引擎</h3><p>{palaceSeries.length}集贡献{palaceFollows}个关注，占全部单篇关注的{palaceFollowShare.toFixed(1)}%；新增剧集持续带来关注转化。</p></article>
         <article><span>02</span><h3>高完播并不等于高关注</h3><p>5月13日、6月9日和6月23日完播率均超55%，但关注贡献有限，需要补强系列承诺和关注理由。</p></article>
-        <article><span>03</span><h3>背锅侠收官集关注转化回升</h3><p>第9集播放1,160却带来14个关注，低于第6集的播放规模，但悬念揭晓和大结局预告提高了转化效率。</p></article>
+        <article><span>03</span><h3>背锅侠收官集关注转化回升</h3><p>第9集播放1,187却带来14个关注，低于第6集的播放规模，但悬念揭晓和大结局预告提高了转化效率。</p></article>
       </section>
 
       <footer><span>单篇累计口径：视频发布后的累计表现，不与首页按日新增口径直接相加</span><span>数据来源：视频号动态数据明细 · {contentData.length}条独立内容</span></footer>

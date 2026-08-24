@@ -186,7 +186,7 @@ export default function Home() {
           <a className="active" href="/">运营总览</a>
           <a href="/content/">单篇内容</a>
         </nav>
-        <div className="data-status"><i /> 累计数据截至 2026.08.17</div>
+        <div className="data-status"><i /> 累计数据截至 2026.08.20</div>
       </header>
 
       <section className="hero" id="top">
@@ -213,7 +213,7 @@ export default function Home() {
       <section className="period-strip">
         <span>{range === "all" ? "每日趋势·完整周期" : `每日趋势·近${range}天`}</span>
         <strong>{shortDate(current[0].date)} — {shortDate(current.at(-1)!.date)}</strong>
-        <em>日趋势明细至 07.26 · 顶部累计指标已更新至 08.17</em>
+        <em>日趋势明细至 07.26 · 顶部累计指标已更新至 08.20</em>
       </section>
 
       <section className="kpi-grid" aria-label="关键指标">
@@ -227,7 +227,7 @@ export default function Home() {
               <strong>{number.format(cumulativeTotals[key])}</strong>
               <div className="kpi-foot">
                 <span>{contentData.length}条内容累计</span>
-                <b>截至 08.17</b>
+                <b>截至 08.20</b>
               </div>
             </article>
           );
@@ -372,7 +372,7 @@ export default function Home() {
       </section>
 
       <footer>
-        <span>累计指标：截至2026.08.17 · 每日趋势明细：2026.04.22—07.26</span>
+        <span>累计指标：截至2026.08.20 · 每日趋势明细：2026.04.22—07.26</span>
         <span>数据来源：视频号后台导出 · 指标可能存在约1%的平台统计误差</span>
       </footer>
     </main>
