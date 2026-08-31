@@ -134,7 +134,7 @@ export default function ContentAnalysis() {
           <a href="/">运营总览</a>
           <a className="active" href="/content/">单篇内容</a>
         </nav>
-        <div className="data-status"><i /> 累计数据更新至 2026.08.20</div>
+        <div className="data-status"><i /> 累计数据更新至 2026.08.27</div>
       </header>
 
       <section className="content-hero">
@@ -143,7 +143,7 @@ export default function ContentAnalysis() {
           <h1>单篇内容分析</h1>
           <p>拆解 {contentData.length} 条视频的播放效率、完播表现、互动质量与关注转化，找到可复用的内容结构。</p>
         </div>
-        <div className="content-hero-stat"><span>累计单篇播放</span><strong>{number.format(allPlays)}</strong><small>2026.04.22 — 08.20</small></div>
+        <div className="content-hero-stat"><span>累计单篇播放</span><strong>{number.format(allPlays)}</strong><small>2026.04.22 — 08.27</small></div>
       </section>
 
       <section className="content-filter" aria-label="内容类型筛选">
