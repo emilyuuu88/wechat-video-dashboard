@@ -119,6 +119,8 @@ export default function ContentAnalysis() {
   const maxAvgPlays = Math.max(...categoryStats.map((item) => item.avgPlays));
   const backSeries = contentData.filter((item) => item.category === "背锅侠系列");
   const palaceSeries = contentData.filter((item) => item.category === "太子妃系列");
+  const bossSeries = contentData.filter((item) => item.title.includes("霸总") || item.title.includes("霸道总裁"));
+  const aiSeries = contentData.filter((item) => item.title.includes("AI财务") || item.title.includes("AI入职天庭财务司"));
   const allFollows = sum(contentData, "follows");
   const palaceFollows = sum(palaceSeries, "follows");
   const palaceFollowShare = palaceFollows / Math.max(allFollows, 1) * 100;
@@ -183,7 +185,7 @@ export default function ContentAnalysis() {
       </section>
 
       <section className="series-section">
-        <div className="series-heading"><p className="section-kicker">SERIES COMPARISON</p><h2>两条系列内容的增长能力</h2></div>
+        <div className="series-heading"><p className="section-kicker">SERIES COMPARISON</p><h2>四条系列内容的增长能力</h2></div>
         <article className="series-card back-series">
           <div><span>职场悬疑连续剧</span><h3>《背锅侠》系列</h3><p>{backSeries.length}集 · 累计播放 {number.format(sum(backSeries, "plays"))} · 关注 +{sum(backSeries, "follows")}</p></div>
           <div className="episode-bars">{backSeries.map((item, index) => <i key={item.date} style={{ height: `${Math.max(item.plays / Math.max(...backSeries.map((x) => x.plays)) * 100, 8)}%` }}><span>{index + 1}</span></i>)}</div>
@@ -191,6 +193,14 @@ export default function ContentAnalysis() {
         <article className="series-card palace-series">
           <div><span>古装财务短剧</span><h3>《太子妃》系列</h3><p>{palaceSeries.length}集 · 累计播放 {number.format(sum(palaceSeries, "plays"))} · 关注 +{palaceFollows}</p></div>
           <div className="episode-bars">{palaceSeries.map((item, index) => <i key={item.date} style={{ height: `${Math.max(item.plays / Math.max(...palaceSeries.map((x) => x.plays)) * 100, 8)}%` }}><span>{index + 1}</span></i>)}</div>
+        </article>
+        <article className="series-card boss-series">
+          <div><span>霸总财务剧情</span><h3>《霸总》系列</h3><p>{bossSeries.length}集 · 累计播放 {number.format(sum(bossSeries, "plays"))} · 关注 +{sum(bossSeries, "follows")}</p></div>
+          <div className="episode-bars">{bossSeries.map((item, index) => <i key={`${item.date}-${item.title}`} style={{ height: `${Math.max(item.plays / Math.max(...bossSeries.map((x) => x.plays)) * 100, 8)}%` }}><span>{index + 1}</span></i>)}</div>
+        </article>
+        <article className="series-card ai-series">
+          <div><span>AI财务内容</span><h3>《AI财务》系列</h3><p>{aiSeries.length}集 · 累计播放 {number.format(sum(aiSeries, "plays"))} · 关注 +{sum(aiSeries, "follows")}</p></div>
+          <div className="episode-bars">{aiSeries.map((item, index) => <i key={`${item.date}-${item.title}`} style={{ height: `${Math.max(item.plays / Math.max(...aiSeries.map((x) => x.plays)) * 100, 8)}%` }}><span>{index + 1}</span></i>)}</div>
         </article>
       </section>
 

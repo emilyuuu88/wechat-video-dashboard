@@ -46,4 +46,6 @@ test("server-renders the updated content analysis", async () => {
   assert.match(html, /7,832/);
   assert.match(html, /106,835/);
   assert.match(html, />60</);
+  assert.match(html, /《霸总》系列/);
+  assert.match(html, /《AI财务》系列/);
 });

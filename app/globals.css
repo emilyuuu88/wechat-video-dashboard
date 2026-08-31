@@ -297,12 +297,14 @@ footer { padding: 27px 0 36px; display: flex; justify-content: space-between; ga
 .category-cards button > i { height: 5px; margin-top: 8px; display: block; overflow: hidden; border-radius: 99px; background: #eceff4; }
 .category-cards button > i em { display: block; height: 100%; border-radius: inherit; }
 .category-cards button > p { margin: 9px 0 0; display: flex; justify-content: space-between; color: var(--muted); font-size: 8px; }
-.series-section { margin-top: 14px; display: grid; grid-template-columns: .7fr 1fr 1fr; gap: 14px; }
-.series-heading { padding: 22px 8px; align-self: center; }
+.series-section { margin-top: 14px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.series-heading { padding: 22px 8px 4px; grid-column: 1 / -1; }
 .series-heading h2 { margin: 0; font-size: 23px; line-height: 1.2; }
 .series-card { min-height: 185px; padding: 22px; display: grid; grid-template-columns: 1fr 120px; gap: 18px; align-items: end; color: white; border-radius: 20px; box-shadow: 0 15px 38px rgba(33,43,69,.12); }
 .back-series { background: linear-gradient(145deg, #385f9d, #273c68); }
 .palace-series { background: linear-gradient(145deg, #ef7a20, #cc5512); }
+.boss-series { background: linear-gradient(145deg, #2769c7, #123e85); }
+.ai-series { background: linear-gradient(145deg, #5856d6, #243f99); }
 .series-card span { color: rgba(255,255,255,.6); font-size: 9px; }
 .series-card h3 { margin: 7px 0; font-size: 17px; }
 .series-card p { margin: 0; color: rgba(255,255,255,.67); font-size: 9px; line-height: 1.55; }
@@ -471,6 +473,8 @@ td { padding: 15px 14px; }
 .series-card { min-height: 215px; padding: 28px; border-radius: 28px; }
 .back-series { background: linear-gradient(145deg, #1859b2, #0a2b65); }
 .palace-series { background: linear-gradient(145deg, #168cff, #0758bc); }
+.boss-series { background: linear-gradient(145deg, #2b79e6, #164d9e); }
+.ai-series { background: linear-gradient(145deg, #6765ec, #294ca8); }
 .content-ranking, .content-insights { margin-top: 18px; }
 
 button:focus-visible, a:focus-visible { outline-color: rgba(10,132,255,.38); }
