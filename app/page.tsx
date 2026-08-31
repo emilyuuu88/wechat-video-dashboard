@@ -189,37 +189,46 @@ export default function Home() {
         <div className="data-status"><i /> 累计数据截至 2026.08.27</div>
       </header>
 
-      <section className="hero" id="top">
-        <div>
-          <p className="eyebrow">CHANNEL PERFORMANCE DASHBOARD</p>
-          <h1>视频号数据驾驶舱</h1>
-          <p className="hero-copy">用播放、互动与关注转化，识别真正带来账号增长的高价值日期。</p>
-        </div>
-        <div className="range-switch" aria-label="每日趋势范围">
-          {(["7", "30", "all"] as RangeKey[]).map((key) => (
-            <button
-              type="button"
-              key={key}
-              className={range === key ? "active" : ""}
-              aria-pressed={range === key}
-              onClick={() => setRange(key)}
-            >
-              {key === "all" ? "全周期" : `近${key}天`}
-            </button>
-          ))}
-        </div>
-      </section>
+      <div className="overview-cluster" id="top">
+        <section className="hero">
+          <div>
+            <p className="eyebrow">CHANNEL PERFORMANCE DASHBOARD</p>
+            <h1>视频号数据驾驶舱</h1>
+            <p className="hero-copy">用播放、互动与关注转化，识别真正带来账号增长的高价值日期。</p>
+          </div>
+          <div className="range-switch" aria-label="每日趋势范围">
+            {(["7", "30", "all"] as RangeKey[]).map((key) => (
+              <button
+                type="button"
+                key={key}
+                className={range === key ? "active" : ""}
+                aria-pressed={range === key}
+                onClick={() => setRange(key)}
+              >
+                {key === "all" ? "全周期" : `近${key}天`}
+              </button>
+            ))}
+          </div>
+        </section>
 
-      <section className="period-strip">
-        <span>{range === "all" ? "每日趋势·完整周期" : `每日趋势·近${range}天`}</span>
-        <strong>{shortDate(current[0].date)} — {shortDate(current.at(-1)!.date)}</strong>
-        <em>日趋势明细至 07.26 · 顶部累计指标已更新至 08.27</em>
-      </section>
+        <section className="period-strip">
+          <span>{range === "all" ? "每日趋势·完整周期" : `每日趋势·近${range}天`}</span>
+          <strong>{shortDate(current[0].date)} — {shortDate(current.at(-1)!.date)}</strong>
+          <em>日趋势明细至 07.26 · 顶部累计指标已更新至 08.27</em>
+        </section>
+      </div>
 
       <section className="kpi-grid" aria-label="关键指标">
         {kpiMetricOrder.map((key, index) => {
           return (
-            <article className={`kpi-card ${index === 0 ? "featured" : ""}`} key={key}>
+            <button
+              type="button"
+              className={`kpi-card ${index === 0 ? "featured" : ""} ${metric === key ? "selected" : ""}`}
+              key={key}
+              aria-pressed={metric === key}
+              aria-label={`查看${metricMeta[key].label}趋势`}
+              onClick={() => setMetric(key)}
+            >
               <div className="kpi-title">
                 <span>{key === "follows" ? "粉丝数" : metricMeta[key].label}</span>
                 <i style={{ background: metricMeta[key].color }}>{metricMeta[key].short}</i>
@@ -229,7 +238,7 @@ export default function Home() {
                 <span>{contentData.length}条内容累计</span>
                 <b>截至 08.27</b>
               </div>
-            </article>
+            </button>
           );
         })}
       </section>
