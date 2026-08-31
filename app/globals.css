@@ -192,7 +192,7 @@ h1 { margin: 0; font-size: clamp(38px, 5vw, 66px); line-height: 1; letter-spacin
 
 .lower-grid { grid-template-columns: minmax(0, 1.45fr) minmax(320px, .55fr); }
 .subtle-note { color: var(--muted); font-size: 9px; }
-.month-chart { height: 287px; margin-top: 22px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; align-items: end; }
+.month-chart { height: 287px; margin-top: 22px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; align-items: end; }
 .month-column { min-width: 0; text-align: center; }
 .month-bar-zone { height: 165px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
 .month-bar-zone > span { color: var(--muted); font-size: 9px; font-weight: 700; }

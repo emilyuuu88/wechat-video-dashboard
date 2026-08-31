@@ -30,10 +30,10 @@ test("server-renders the updated overview totals", async () => {
   const html = await response.text();
   assert.match(html, /<title>嘴里人｜视频号数据驾驶舱<\/title>/i);
   assert.match(html, /累计数据截至 2026\.08\.27/);
-  assert.match(html, /106,835/);
+  assert.match(html, /27,625/);
   assert.match(html, /粉丝数/);
-  assert.match(html, />307</);
-  assert.match(html, /60(?:<!-- -->)?条内容累计/);
+  assert.match(html, />175</);
+  assert.match(html, /14(?:<!-- -->)?条内容累计/);
 });
 
 test("server-renders the updated content analysis", async () => {
@@ -42,7 +42,8 @@ test("server-renders the updated content analysis", async () => {
 
   const html = await response.text();
   assert.match(html, /累计数据更新至 2026\.08\.27/);
-  assert.match(html, /2026\.04\.22 — 08\.27/);
+  assert.match(html, /当前分类·单篇最高播放/);
+  assert.match(html, /7,832/);
   assert.match(html, /106,835/);
   assert.match(html, />60</);
 });

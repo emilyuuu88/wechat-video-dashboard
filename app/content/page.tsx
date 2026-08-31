@@ -99,6 +99,7 @@ export default function ContentAnalysis() {
   const followRate = totals.follows / Math.max(totals.plays, 1) * 100;
   const ranking = [...filtered].sort((a, b) => b[metric] - a[metric]).slice(0, 10);
   const rankingMax = Math.max(...ranking.map((item) => item[metric]), 1);
+  const topContent = [...filtered].sort((a, b) => b.plays - a.plays)[0];
 
   const categoryStats = categories.slice(1).map((key) => {
     const items = contentData.filter((item) => item.category === key);
@@ -118,7 +119,6 @@ export default function ContentAnalysis() {
   const maxAvgPlays = Math.max(...categoryStats.map((item) => item.avgPlays));
   const backSeries = contentData.filter((item) => item.category === "背锅侠系列");
   const palaceSeries = contentData.filter((item) => item.category === "太子妃系列");
-  const allPlays = sum(contentData, "plays");
   const allFollows = sum(contentData, "follows");
   const palaceFollows = sum(palaceSeries, "follows");
   const palaceFollowShare = palaceFollows / Math.max(allFollows, 1) * 100;
@@ -143,7 +143,7 @@ export default function ContentAnalysis() {
           <h1>单篇内容分析</h1>
           <p>拆解 {contentData.length} 条视频的播放效率、完播表现、互动质量与关注转化，找到可复用的内容结构。</p>
         </div>
-        <div className="content-hero-stat"><span>累计单篇播放</span><strong>{number.format(allPlays)}</strong><small>2026.04.22 — 08.27</small></div>
+        <div className="content-hero-stat"><span>当前分类·单篇最高播放</span><strong>{number.format(topContent.plays)}</strong><small>{topContent.date} · {topContent.title}</small></div>
       </section>
 
       <section className="content-filter" aria-label="内容类型筛选">
@@ -221,7 +221,7 @@ export default function ContentAnalysis() {
         <article><span>03</span><h3>背锅侠收官集关注转化回升</h3><p>第9集播放1,187却带来14个关注，低于第6集的播放规模，但悬念揭晓和大结局预告提高了转化效率。</p></article>
       </section>
 
-      <footer><span>单篇累计口径：视频发布后的累计表现，不与首页按日新增口径直接相加</span><span>数据来源：视频号动态数据明细 · {contentData.length}条独立内容</span></footer>
+      <footer><span>单篇累计口径：视频发布后的累计表现；分类筛选会同步更新本页指标</span><span>数据来源：视频号动态数据明细 · {contentData.length}条独立内容</span></footer>
     </main>
   );
 }

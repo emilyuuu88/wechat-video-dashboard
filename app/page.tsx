@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { dailyData, type DailyMetric } from "./data";
+import { type DailyMetric } from "./data";
 import { contentData } from "./content/content-data";
 
 type RangeKey = "7" | "30" | "all";
@@ -133,27 +133,52 @@ export default function Home() {
   const [range, setRange] = useState<RangeKey>("30");
   const [metric, setMetric] = useState<MetricKey>("plays");
 
-  const count = range === "all" ? dailyData.length : Number(range);
-  const current = useMemo(() => dailyData.slice(-count), [count]);
+  const publishedDailyData = useMemo(() => {
+    const grouped = new Map<string, DailyMetric>();
+    contentData.forEach((item) => {
+      const existing = grouped.get(item.date) ?? {
+        date: item.date,
+        plays: 0,
+        recommends: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        follows: 0,
+      };
+      metricOrder.forEach((key) => { existing[key] += item[key]; });
+      grouped.set(item.date, existing);
+    });
+    return [...grouped.values()].sort((a, b) => a.date.localeCompare(b.date));
+  }, []);
+  const latestDate = publishedDailyData.at(-1)!.date;
+  const cutoffDate = useMemo(() => {
+    if (range === "all") return publishedDailyData[0].date;
+    const date = new Date(`${latestDate}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() - Number(range) + 1);
+    return date.toISOString().slice(0, 10);
+  }, [latestDate, publishedDailyData, range]);
+  const current = useMemo(
+    () => publishedDailyData.filter((item) => item.date >= cutoffDate),
+    [cutoffDate, publishedDailyData],
+  );
+  const currentContent = useMemo(
+    () => contentData.filter((item) => item.date >= cutoffDate),
+    [cutoffDate],
+  );
   const totals = useMemo(
     () => Object.fromEntries(metricOrder.map((key) => [key, sum(current, key)])) as Record<MetricKey, number>,
     [current],
-  );
-  const cumulativeTotals = useMemo(
-    () => Object.fromEntries(metricOrder.map((key) => [
-      key,
-      contentData.reduce((total, item) => total + item[key], 0),
-    ])) as Record<MetricKey, number>,
-    [],
   );
   const engagement = ((totals.recommends + totals.likes + totals.comments + totals.shares) / totals.plays) * 100;
   const followRate = (totals.follows / totals.plays) * 100;
   const topDays = [...current].sort((a, b) => b[metric] - a[metric]).slice(0, 5);
   const peakDay = topDays[0];
+  const growthDay = [...current].sort((a, b) => b.follows - a.follows)[0];
+  const growthShare = growthDay.follows / Math.max(totals.follows, 1) * 100;
 
   const months = useMemo(() => {
     const grouped = new Map<string, DailyMetric[]>();
-    dailyData.forEach((item) => {
+    publishedDailyData.forEach((item) => {
       const month = item.date.slice(0, 7);
       grouped.set(month, [...(grouped.get(month) ?? []), item]);
     });
@@ -169,7 +194,7 @@ export default function Home() {
         follows: sum(items, "follows"),
       };
     });
-  }, []);
+  }, [publishedDailyData]);
   const maxDaily = Math.max(...months.map((item) => item.daily));
 
   return (
@@ -196,7 +221,7 @@ export default function Home() {
             <h1>视频号数据驾驶舱</h1>
             <p className="hero-copy">用播放、互动与关注转化，识别真正带来账号增长的高价值日期。</p>
           </div>
-          <div className="range-switch" aria-label="每日趋势范围">
+          <div className="range-switch" aria-label="看板数据范围">
             {(["7", "30", "all"] as RangeKey[]).map((key) => (
               <button
                 type="button"
@@ -212,9 +237,9 @@ export default function Home() {
         </section>
 
         <section className="period-strip">
-          <span>{range === "all" ? "每日趋势·完整周期" : `每日趋势·近${range}天`}</span>
+          <span>{range === "all" ? "发布内容·完整周期" : `发布内容·近${range}天`}</span>
           <strong>{shortDate(current[0].date)} — {shortDate(current.at(-1)!.date)}</strong>
-          <em>日趋势明细至 07.26 · 顶部累计指标已更新至 08.27</em>
+          <em>{currentContent.length}条发布内容 · 指标和图表已同步联动</em>
         </section>
       </div>
 
@@ -233,10 +258,10 @@ export default function Home() {
                 <span>{key === "follows" ? "粉丝数" : metricMeta[key].label}</span>
                 <i style={{ background: metricMeta[key].color }}>{metricMeta[key].short}</i>
               </div>
-              <strong>{number.format(cumulativeTotals[key])}</strong>
+              <strong>{number.format(totals[key])}</strong>
               <div className="kpi-foot">
-                <span>{contentData.length}条内容累计</span>
-                <b>截至 08.27</b>
+                <span>{currentContent.length}条内容累计</span>
+                <b>{range === "all" ? "全周期" : `近${range}天`}</b>
               </div>
             </button>
           );
@@ -248,7 +273,7 @@ export default function Home() {
           <div className="panel-head">
             <div>
               <p className="section-kicker">DAILY TREND</p>
-              <h2>每日数据趋势</h2>
+              <h2>内容发布表现趋势</h2>
             </div>
             <div className="metric-switch" aria-label="选择趋势指标">
               {metricOrder.map((key) => (
@@ -279,22 +304,22 @@ export default function Home() {
               <p className="section-kicker">GROWTH SIGNAL</p>
               <h2>增长信号</h2>
             </div>
-            <span className="hot-badge">7月23日</span>
+            <span className="hot-badge">{shortDate(growthDay.date)}</span>
           </div>
           <div className="signal-hero">
             <span>单日新增关注</span>
-            <strong>+43</strong>
-            <p>占近30天新增关注的 <b>57.3%</b></p>
+            <strong>+{number.format(growthDay.follows)}</strong>
+            <p>占当前范围新增关注的 <b>{growthShare.toFixed(1)}%</b></p>
           </div>
           <div className="signal-metrics">
-            <div><span>播放</span><b>5,401</b></div>
-            <div><span>推荐</span><b>297</b></div>
-            <div><span>喜欢</span><b>145</b></div>
-            <div><span>分享</span><b>48</b></div>
+            <div><span>播放</span><b>{number.format(growthDay.plays)}</b></div>
+            <div><span>推荐</span><b>{number.format(growthDay.recommends)}</b></div>
+            <div><span>喜欢</span><b>{number.format(growthDay.likes)}</b></div>
+            <div><span>分享</span><b>{number.format(growthDay.shares)}</b></div>
           </div>
           <div className="signal-note">
             <span>核心判断</span>
-            <p>7月23日不是单纯的播放峰值，而是推荐、互动和关注同步放大的高质量增长节点。</p>
+            <p>{shortDate(growthDay.date)}在当前范围内贡献最多关注，可结合播放、推荐和分享表现复盘内容结构。</p>
           </div>
         </aside>
       </section>
@@ -306,7 +331,7 @@ export default function Home() {
               <p className="section-kicker">MONTHLY COMPARISON</p>
               <h2>月度效率对比</h2>
             </div>
-            <span className="subtle-note">4月、7月为阶段数据，优先比较日均</span>
+            <span className="subtle-note">4月、8月为阶段数据，优先比较日均</span>
           </div>
           <div className="month-chart">
             {months.map((item) => (
@@ -347,7 +372,7 @@ export default function Home() {
         <div className="panel-head">
           <div>
             <p className="section-kicker">TOP DAYS</p>
-            <h2>{metricMeta[metric].label}表现最佳日期</h2>
+              <h2>{metricMeta[metric].label}表现最佳发布日期</h2>
           </div>
           <span className="subtle-note">随趋势指标同步切换</span>
         </div>
@@ -381,7 +406,7 @@ export default function Home() {
       </section>
 
       <footer>
-        <span>累计指标：截至2026.08.27 · 每日趋势明细：2026.04.22—07.26</span>
+        <span>统计口径：按视频发布日期归集单篇累计表现 · 数据截至2026.08.27</span>
         <span>数据来源：视频号后台导出 · 指标可能存在约1%的平台统计误差</span>
       </footer>
     </main>
