@@ -7,6 +7,7 @@ type RankMetric = "plays" | "follows" | "recommends" | "shares" | "completion";
 type CategoryFilter = "全部内容" | ContentCategory;
 
 const number = new Intl.NumberFormat("zh-CN");
+const hitThreshold = 3000;
 const categories: CategoryFilter[] = ["全部内容", "职场共鸣/知识", "剧情动画", "背锅侠系列", "太子妃系列"];
 const metricMeta: Record<RankMetric, { label: string; unit: string }> = {
   plays: { label: "播放", unit: "" },
@@ -30,6 +31,43 @@ function percent(value: number) {
   return `${value.toFixed(2)}%`;
 }
 
+function SeriesCard({
+  items,
+  className,
+  eyebrow,
+  title,
+}: {
+  items: ContentItem[];
+  className: string;
+  eyebrow: string;
+  title: string;
+}) {
+  const plays = sum(items, "plays");
+  const interactions = sum(items, "recommends") + sum(items, "likes") + sum(items, "comments") + sum(items, "shares");
+  const follows = sum(items, "follows");
+  const hits = items.filter((item) => item.plays >= hitThreshold).length;
+  const maxPlays = Math.max(...items.map((item) => item.plays), 1);
+
+  return (
+    <article className={`series-card ${className}`}>
+      <div className="series-card-head">
+        <div><span>{eyebrow}</span><h3>{title}</h3></div>
+        <b>爆款 {hits} 条</b>
+      </div>
+      <div className="series-stats">
+        <div><span>内容数</span><strong>{items.length}</strong></div>
+        <div><span>累计播放</span><strong>{number.format(plays)}</strong></div>
+        <div><span>篇均播放</span><strong>{number.format(Math.round(plays / items.length))}</strong></div>
+        <div><span>新增关注</span><strong>+{follows}</strong></div>
+      </div>
+      <div className="series-card-foot">
+        <p>互动率 {(interactions / plays * 100).toFixed(2)}% · 关注转化 {(follows / plays * 100).toFixed(2)}%</p>
+        <div className="episode-bars">{items.map((item, index) => <i key={`${item.date}-${item.title}`} style={{ height: `${Math.max(item.plays / maxPlays * 100, 8)}%` }}><span>{index + 1}</span></i>)}</div>
+      </div>
+    </article>
+  );
+}
+
 function EfficiencyScatter({ data }: { data: ContentItem[] }) {
   const width = 760;
   const height = 350;
@@ -46,9 +84,15 @@ function EfficiencyScatter({ data }: { data: ContentItem[] }) {
   const topLabels = new Set([...data].sort((a, b) => b.plays - a.plays).slice(0, 3).map((item) => item.title));
   const x = (value: number) => left + (value / maxCompletion) * plotW;
   const y = (value: number) => top + plotH - (value / maxPlays) * plotH;
+  const splitX = x(avgCompletion);
+  const splitY = y(avgPlays);
 
   return (
     <svg className="scatter-svg" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="单篇内容完播率与播放量效率矩阵，气泡大小表示关注量">
+      <rect className="matrix-zone traffic" x={left} y={top} width={splitX - left} height={splitY - top} />
+      <rect className="matrix-zone hit" x={splitX} y={top} width={left + plotW - splitX} height={splitY - top} />
+      <rect className="matrix-zone optimize" x={left} y={splitY} width={splitX - left} height={top + plotH - splitY} />
+      <rect className="matrix-zone potential" x={splitX} y={splitY} width={left + plotW - splitX} height={top + plotH - splitY} />
       {[0, 0.25, 0.5, 0.75, 1].map((ratio) => (
         <g key={ratio}>
           <line className="grid-line" x1={left} x2={left + plotW} y1={top + plotH * ratio} y2={top + plotH * ratio} />
@@ -60,8 +104,10 @@ function EfficiencyScatter({ data }: { data: ContentItem[] }) {
       ))}
       <line className="matrix-line" x1={x(avgCompletion)} x2={x(avgCompletion)} y1={top} y2={top + plotH} />
       <line className="matrix-line" x1={left} x2={left + plotW} y1={y(avgPlays)} y2={y(avgPlays)} />
-      <text className="matrix-note" x={left + 8} y={top + 15}>高播放 · 低完播</text>
-      <text className="matrix-note" x={left + plotW - 8} y={top + 15} textAnchor="end">高播放 · 高完播</text>
+      <text className="matrix-note" x={left + 8} y={top + 15}>流量型 · 高播放低完播</text>
+      <text className="matrix-note hit-note" x={left + plotW - 8} y={top + 15} textAnchor="end">爆款区 · 高播放高完播</text>
+      <text className="matrix-note" x={left + 8} y={top + plotH - 9}>待优化 · 低播放低完播</text>
+      <text className="matrix-note" x={left + plotW - 8} y={top + plotH - 9} textAnchor="end">潜力型 · 低播放高完播</text>
       {data.map((item) => {
         const cx = x(item.completion);
         const cy = y(item.plays);
@@ -100,6 +146,17 @@ export default function ContentAnalysis() {
   const ranking = [...filtered].sort((a, b) => b[metric] - a[metric]).slice(0, 10);
   const rankingMax = Math.max(...ranking.map((item) => item[metric]), 1);
   const topContent = [...filtered].sort((a, b) => b.plays - a.plays)[0];
+  const matrixAvgPlays = totals.plays / filtered.length;
+  const matrixAvgCompletion = filtered.reduce((total, item) => total + item.completion, 0) / filtered.length;
+  const matrixQuadrants = [
+    { key: "hit", title: "爆款区", rule: "高播放 · 高完播", items: filtered.filter((item) => item.plays >= matrixAvgPlays && item.completion >= matrixAvgCompletion) },
+    { key: "traffic", title: "流量型", rule: "高播放 · 低完播", items: filtered.filter((item) => item.plays >= matrixAvgPlays && item.completion < matrixAvgCompletion) },
+    { key: "potential", title: "潜力型", rule: "低播放 · 高完播", items: filtered.filter((item) => item.plays < matrixAvgPlays && item.completion >= matrixAvgCompletion) },
+    { key: "optimize", title: "待优化", rule: "低播放 · 低完播", items: filtered.filter((item) => item.plays < matrixAvgPlays && item.completion < matrixAvgCompletion) },
+  ].map((quadrant) => ({
+    ...quadrant,
+    representative: [...quadrant.items].sort((a, b) => b.plays - a.plays)[0],
+  }));
 
   const categoryStats = categories.slice(1).map((key) => {
     const items = contentData.filter((item) => item.category === key);
@@ -164,8 +221,17 @@ export default function ContentAnalysis() {
 
       <section className="content-grid">
         <article className="panel matrix-panel">
-          <div className="panel-head"><div><p className="section-kicker">EFFICIENCY MATRIX</p><h2>内容效率矩阵</h2></div><span className="subtle-note">气泡越大，关注贡献越高</span></div>
+          <div className="panel-head"><div><p className="section-kicker">EFFICIENCY MATRIX</p><h2>内容效率四象限</h2></div><span className="subtle-note">分界线为当前分类平均值 · 气泡越大关注越高</span></div>
           <EfficiencyScatter data={filtered} />
+          <div className="matrix-summary">
+            {matrixQuadrants.map((quadrant) => (
+              <div className={`matrix-summary-item ${quadrant.key}`} key={quadrant.key}>
+                <div><span>{quadrant.title}</span><b>{quadrant.items.length}条</b></div>
+                <small>{quadrant.rule}</small>
+                <p>{quadrant.representative ? `代表：${quadrant.representative.title}` : "当前分类暂无内容"}</p>
+              </div>
+            ))}
+          </div>
           <div className="category-legend">{categoryStats.map((item) => <span key={item.category}><i style={{ background: categoryColors[item.category as ContentCategory] }} />{item.category}</span>)}</div>
         </article>
 
@@ -185,23 +251,11 @@ export default function ContentAnalysis() {
       </section>
 
       <section className="series-section">
-        <div className="series-heading"><p className="section-kicker">SERIES COMPARISON</p><h2>四条系列内容的增长能力</h2></div>
-        <article className="series-card back-series">
-          <div><span>职场悬疑连续剧</span><h3>《背锅侠》系列</h3><p>{backSeries.length}集 · 累计播放 {number.format(sum(backSeries, "plays"))} · 关注 +{sum(backSeries, "follows")}</p></div>
-          <div className="episode-bars">{backSeries.map((item, index) => <i key={item.date} style={{ height: `${Math.max(item.plays / Math.max(...backSeries.map((x) => x.plays)) * 100, 8)}%` }}><span>{index + 1}</span></i>)}</div>
-        </article>
-        <article className="series-card palace-series">
-          <div><span>古装财务短剧</span><h3>《太子妃》系列</h3><p>{palaceSeries.length}集 · 累计播放 {number.format(sum(palaceSeries, "plays"))} · 关注 +{palaceFollows}</p></div>
-          <div className="episode-bars">{palaceSeries.map((item, index) => <i key={item.date} style={{ height: `${Math.max(item.plays / Math.max(...palaceSeries.map((x) => x.plays)) * 100, 8)}%` }}><span>{index + 1}</span></i>)}</div>
-        </article>
-        <article className="series-card boss-series">
-          <div><span>霸总财务剧情</span><h3>《霸总》系列</h3><p>{bossSeries.length}集 · 累计播放 {number.format(sum(bossSeries, "plays"))} · 关注 +{sum(bossSeries, "follows")}</p></div>
-          <div className="episode-bars">{bossSeries.map((item, index) => <i key={`${item.date}-${item.title}`} style={{ height: `${Math.max(item.plays / Math.max(...bossSeries.map((x) => x.plays)) * 100, 8)}%` }}><span>{index + 1}</span></i>)}</div>
-        </article>
-        <article className="series-card ai-series">
-          <div><span>AI财务内容</span><h3>《AI财务》系列</h3><p>{aiSeries.length}集 · 累计播放 {number.format(sum(aiSeries, "plays"))} · 关注 +{sum(aiSeries, "follows")}</p></div>
-          <div className="episode-bars">{aiSeries.map((item, index) => <i key={`${item.date}-${item.title}`} style={{ height: `${Math.max(item.plays / Math.max(...aiSeries.map((x) => x.plays)) * 100, 8)}%` }}><span>{index + 1}</span></i>)}</div>
-        </article>
+        <div className="series-heading"><div><p className="section-kicker">SERIES COMPARISON</p><h2>四条系列内容的增长能力</h2></div><span>爆款口径：单篇播放 ≥ {number.format(hitThreshold)}</span></div>
+        <SeriesCard items={backSeries} className="back-series" eyebrow="职场悬疑连续剧" title="《背锅侠》系列" />
+        <SeriesCard items={palaceSeries} className="palace-series" eyebrow="古装财务短剧" title="《太子妃》系列" />
+        <SeriesCard items={bossSeries} className="boss-series" eyebrow="霸总财务剧情" title="《霸总》系列" />
+        <SeriesCard items={aiSeries} className="ai-series" eyebrow="AI财务内容" title="《AI财务》系列" />
       </section>
 
       <section className="panel content-ranking">

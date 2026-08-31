@@ -48,4 +48,6 @@ test("server-renders the updated content analysis", async () => {
   assert.match(html, />60</);
   assert.match(html, /《霸总》系列/);
   assert.match(html, /《AI财务》系列/);
+  assert.match(html, /内容效率四象限/);
+  assert.match(html, /爆款口径：单篇播放/);
 });
