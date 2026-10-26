@@ -8,7 +8,7 @@ type CategoryFilter = "全部内容" | ContentCategory;
 
 const number = new Intl.NumberFormat("zh-CN");
 const hitThreshold = 3000;
-const categories: CategoryFilter[] = ["全部内容", "职场共鸣/知识", "剧情动画", "背锅侠系列", "太子妃系列"];
+const categories: CategoryFilter[] = ["全部内容", "职场共鸣/知识", "剧情动画", "背锅侠系列", "太子妃系列", "霸总系列", "AI财务系列"];
 const metricMeta: Record<RankMetric, { label: string; unit: string }> = {
   plays: { label: "播放", unit: "" },
   follows: { label: "关注", unit: "" },
@@ -21,6 +21,8 @@ const categoryColors: Record<ContentCategory, string> = {
   "剧情动画": "var(--purple)",
   "背锅侠系列": "var(--blue)",
   "太子妃系列": "var(--green)",
+  "霸总系列": "#f59e0b",
+  "AI财务系列": "#06b6d4",
 };
 
 function sum(data: ContentItem[], key: "plays" | "recommends" | "likes" | "comments" | "shares" | "follows") {
@@ -176,8 +178,8 @@ export default function ContentAnalysis() {
   const maxAvgPlays = Math.max(...categoryStats.map((item) => item.avgPlays));
   const backSeries = contentData.filter((item) => item.category === "背锅侠系列");
   const palaceSeries = contentData.filter((item) => item.category === "太子妃系列");
-  const bossSeries = contentData.filter((item) => item.title.includes("霸总") || item.title.includes("霸道总裁"));
-  const aiSeries = contentData.filter((item) => item.title.includes("AI财务") || item.title.includes("AI入职天庭财务司"));
+  const bossSeries = contentData.filter((item) => item.category === "霸总系列" || item.title.includes("霸总") || item.title.includes("霸道总裁"));
+  const aiSeries = contentData.filter((item) => item.category === "AI财务系列" || item.title.includes("AI财务") || item.title.includes("AI入职天庭财务司"));
   const allFollows = sum(contentData, "follows");
   const palaceFollows = sum(palaceSeries, "follows");
   const palaceFollowShare = palaceFollows / Math.max(allFollows, 1) * 100;
@@ -193,7 +195,7 @@ export default function ContentAnalysis() {
           <a href="/">运营总览</a>
           <a className="active" href="/content/">单篇内容</a>
         </nav>
-        <div className="data-status"><i /> 累计数据更新至 2026.08.27</div>
+        <div className="data-status"><i /> 累计数据更新至 2026.10.26</div>
       </header>
 
       <section className="content-hero">
@@ -280,12 +282,12 @@ export default function ContentAnalysis() {
 
       <section className="insights content-insights">
         <div className="insight-title"><p className="section-kicker">CONTENT INSIGHTS</p><h2>内容策略结论</h2></div>
-        <article><span>01</span><h3>太子妃系列仍是增长主引擎</h3><p>{palaceSeries.length}集贡献{palaceFollows}个关注，占全部单篇关注的{palaceFollowShare.toFixed(1)}%；新增剧集持续带来关注转化。</p></article>
-        <article><span>02</span><h3>高完播并不等于高关注</h3><p>5月13日、6月9日和6月23日完播率均超55%，但关注贡献有限，需要补强系列承诺和关注理由。</p></article>
-        <article><span>03</span><h3>背锅侠收官集关注转化回升</h3><p>第9集播放1,187却带来14个关注，低于第6集的播放规模，但悬念揭晓和大结局预告提高了转化效率。</p></article>
+        <article><span>01</span><h3>太子妃系列仍是增长主引擎</h3><p>{palaceSeries.length}集贡献{palaceFollows}个关注，占全部单篇关注的{palaceFollowShare.toFixed(1)}%，系列化剧情仍是最主要的关注来源。</p></article>
+        <article><span>02</span><h3>10月21日新剧集表现最好</h3><p>《别惹她！卖鱼的竟是高考状元》首集获得3,853次播放和21个关注，是9月30日以后的最高播放内容。</p></article>
+        <article><span>03</span><h3>AI财务系列需优化后半程</h3><p>AI财务系列已形成连续更新，但9月下旬至10月单篇播放偏低，建议强化开场冲突和单集独立看点。</p></article>
       </section>
 
-      <footer><span>单篇累计口径：视频发布后的累计表现；分类筛选会同步更新本页指标</span><span>数据来源：视频号动态数据明细 · {contentData.length}条独立内容</span></footer>
+      <footer><span>单篇累计口径：视频发布后截至2026.10.26的累计表现；分类筛选会同步更新本页指标</span><span>数据来源：视频号动态数据明细 · {contentData.length}条独立内容</span></footer>
     </main>
   );
 }

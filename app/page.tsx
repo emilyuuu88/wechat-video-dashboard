@@ -211,7 +211,7 @@ export default function Home() {
           <a className="active" href="/">运营总览</a>
           <a href="/content/">单篇内容</a>
         </nav>
-        <div className="data-status"><i /> 累计数据截至 2026.08.27</div>
+        <div className="data-status"><i /> 累计数据截至 2026.10.26</div>
       </header>
 
       <div className="overview-cluster" id="top">
@@ -331,7 +331,7 @@ export default function Home() {
               <p className="section-kicker">MONTHLY COMPARISON</p>
               <h2>月度效率对比</h2>
             </div>
-            <span className="subtle-note">4月、8月为阶段数据，优先比较日均</span>
+            <span className="subtle-note">4月、10月为阶段数据，优先比较日均</span>
           </div>
           <div className="month-chart">
             {months.map((item) => (
@@ -400,13 +400,13 @@ export default function Home() {
 
       <section className="insights">
         <div className="insight-title"><p className="section-kicker">ACTIONABLE INSIGHTS</p><h2>下一步怎么做</h2></div>
-        <article><span>01</span><h3>复盘 7月23日的内容模板</h3><p>这一天贡献近30天57.3%的关注，应优先复盘选题、开场、封面、发布时间与转发场景。</p></article>
-        <article><span>02</span><h3>把“高播放”升级为“高转化”</h3><p>6月23日和26日播放更高，但关注明显偏低。后续要在内容中增加明确关注理由与系列预告。</p></article>
-        <article><span>03</span><h3>延续7月互动效率</h3><p>7月阶段互动率3.50%，显著高于6月0.93%。建议围绕高推荐、高分享内容连续验证。</p></article>
+        <article><span>01</span><h3>放大10月21日的新剧集模板</h3><p>这一天是近30天播放和关注双峰值，建议继续沿用鲜明人设、明确金额冲突和集数标识。</p></article>
+        <article><span>02</span><h3>稳定霸总系列的关注转化</h3><p>霸总类剧情在7—9月多次带来关注，适合固定角色关系、封面视觉和连载节奏。</p></article>
+        <article><span>03</span><h3>调整AI财务系列的单集结构</h3><p>9月下旬后AI财务系列播放走低，需要缩短铺垫，把风险冲突和解决结果更早放到开场。</p></article>
       </section>
 
       <footer>
-        <span>统计口径：按视频发布日期归集单篇累计表现 · 数据截至2026.08.27</span>
+        <span>统计口径：按视频发布日期归集单篇累计表现 · 数据截至2026.10.26</span>
         <span>数据来源：视频号后台导出 · 指标可能存在约1%的平台统计误差</span>
       </footer>
     </main>

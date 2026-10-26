@@ -192,7 +192,7 @@ h1 { margin: 0; font-size: clamp(38px, 5vw, 66px); line-height: 1; letter-spacin
 
 .lower-grid { grid-template-columns: minmax(0, 1.45fr) minmax(320px, .55fr); }
 .subtle-note { color: var(--muted); font-size: 9px; }
-.month-chart { height: 287px; margin-top: 22px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; align-items: end; }
+.month-chart { height: 287px; margin-top: 22px; display: grid; grid-template-columns: repeat(7, minmax(72px, 1fr)); gap: 10px; align-items: end; }
 .month-column { min-width: 0; text-align: center; }
 .month-bar-zone { height: 165px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
 .month-bar-zone > span { color: var(--muted); font-size: 9px; font-weight: 700; }
@@ -269,7 +269,7 @@ footer { padding: 27px 0 36px; display: flex; justify-content: space-between; ga
 .content-hero-stat { min-width: 270px; padding: 21px 24px; color: white; border-radius: 18px; background: linear-gradient(145deg, #202a45, #354263); box-shadow: 0 17px 38px rgba(25,35,59,.14); }
 .content-hero-stat span, .content-hero-stat small { display: block; color: rgba(255,255,255,.62); font-size: 9px; }
 .content-hero-stat strong { display: block; margin: 7px 0 4px; font-size: 34px; letter-spacing: -.04em; }
-.content-filter { padding: 5px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; border-radius: 15px; background: #e9edf3; }
+.content-filter { padding: 5px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; border-radius: 15px; background: #e9edf3; }
 .content-filter button { padding: 10px 12px; color: var(--muted); font-size: 10px; font-weight: 800; border: 0; border-radius: 11px; background: transparent; cursor: pointer; }
 .content-filter button:hover { color: var(--orange-deep); }
 .content-filter button.active { color: #b94b05; background: white; box-shadow: 0 6px 18px rgba(36,45,70,.09); }
