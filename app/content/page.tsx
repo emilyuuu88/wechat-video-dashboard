@@ -134,7 +134,7 @@ export default function ContentAnalysis() {
     [category],
   );
 
-  const totals = useMemo(() => ({
+  const detailTotals = useMemo(() => ({
     plays: sum(filtered, "plays"),
     recommends: sum(filtered, "recommends"),
     likes: sum(filtered, "likes"),
@@ -142,6 +142,12 @@ export default function ContentAnalysis() {
     shares: sum(filtered, "shares"),
     follows: sum(filtered, "follows"),
   }), [filtered]);
+  const totals = useMemo(() => category === "全部内容" ? {
+    ...detailTotals,
+    recommends: 3316,
+    likes: 2019,
+    follows: 443,
+  } : detailTotals, [category, detailTotals]);
   const weightedCompletion = filtered.reduce((total, item) => total + item.completion * item.plays, 0) / Math.max(totals.plays, 1);
   const engagement = (totals.recommends + totals.likes + totals.comments + totals.shares) / Math.max(totals.plays, 1) * 100;
   const followRate = totals.follows / Math.max(totals.plays, 1) * 100;
@@ -180,7 +186,7 @@ export default function ContentAnalysis() {
   const palaceSeries = contentData.filter((item) => item.category === "太子妃系列");
   const bossSeries = contentData.filter((item) => item.category === "霸总系列" || item.title.includes("霸总") || item.title.includes("霸道总裁"));
   const aiSeries = contentData.filter((item) => item.category === "AI财务系列" || item.title.includes("AI财务") || item.title.includes("AI入职天庭财务司"));
-  const allFollows = sum(contentData, "follows");
+  const allFollows = 443;
   const palaceFollows = sum(palaceSeries, "follows");
   const palaceFollowShare = palaceFollows / Math.max(allFollows, 1) * 100;
 
@@ -287,7 +293,7 @@ export default function ContentAnalysis() {
         <article><span>03</span><h3>AI财务系列需优化后半程</h3><p>AI财务系列已形成连续更新，但9月下旬至10月单篇播放偏低，建议强化开场冲突和单集独立看点。</p></article>
       </section>
 
-      <footer><span>单篇累计口径：视频发布后截至2026.10.26的累计表现；分类筛选会同步更新本页指标</span><span>数据来源：视频号动态数据明细 · {contentData.length}条独立内容</span></footer>
+      <footer><span>单篇累计口径：视频发布后截至2026.10.26的累计表现；“全部内容”的关注、点赞和推荐采用平台总览校准值</span><span>数据来源：视频号动态数据明细 · {contentData.length}条独立内容</span></footer>
     </main>
   );
 }

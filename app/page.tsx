@@ -4,8 +4,38 @@ import { useMemo, useState } from "react";
 import { type DailyMetric } from "./data";
 import { contentData } from "./content/content-data";
 
-type RangeKey = "7" | "30" | "all";
+type RangeKey = "Q2" | "Q3" | "Q4";
 type MetricKey = Exclude<keyof DailyMetric, "date">;
+
+const quarterRanges: Record<RangeKey, { start: string; end: string; period: string }> = {
+  Q2: { start: "2026-04-01", end: "2026-06-30", period: "04.01 — 06.30" },
+  Q3: { start: "2026-07-01", end: "2026-09-30", period: "07.01 — 09.30" },
+  Q4: { start: "2026-10-01", end: "2026-10-26", period: "10.01 — 10.26" },
+};
+
+const quarterAdjustments: Record<RangeKey, Partial<Record<MetricKey, number>>> = {
+  Q2: {},
+  Q3: {},
+  Q4: { recommends: 3, likes: 50, follows: 14 },
+};
+
+const quarterInsights: Record<RangeKey, Array<[string, string]>> = {
+  Q2: [
+    ["复盘6月26日的高播放模板", "霸总剧情在Q2获得最高播放，可继续强化冲突开场和角色关系。"],
+    ["提升高播放内容的关注转化", "Q2部分高播放内容关注贡献较低，需要补强系列预告和关注理由。"],
+    ["保持短剧和知识内容的组合", "剧情内容拉动播放，知识内容承接专业心智，建议保持双线更新。"],
+  ],
+  Q3: [
+    ["复盘7月23日的太子妃首集", "太子妃首集同时带来高播放和高关注，是Q3最值得复用的剧情模板。"],
+    ["继续做强系列化内容", "太子妃、背锅侠和霸总内容共同构成Q3增长主线，应保持角色和连载节奏。"],
+    ["改善AI财务系列后半程", "9月下旬AI财务单篇播放回落，需要缩短铺垫并前置风险冲突。"],
+  ],
+  Q4: [
+    ["放大10月21日的新剧集模板", "这一天是Q4阶段播放和关注双峰值，建议继续沿用鲜明人设、金额冲突和集数标识。"],
+    ["延续档案类剧情", "10月档案主题内容关注转化较好，可继续围绕合同、验收和单据冲突连载。"],
+    ["优化AI财务单集结构", "Q4的AI财务内容播放偏低，建议在开场更早呈现问题和解决结果。"],
+  ],
+};
 
 const metricMeta: Record<
   MetricKey,
@@ -130,7 +160,7 @@ function TrendChart({ data, metric }: { data: DailyMetric[]; metric: MetricKey }
 }
 
 export default function Home() {
-  const [range, setRange] = useState<RangeKey>("30");
+  const [range, setRange] = useState<RangeKey>("Q4");
   const [metric, setMetric] = useState<MetricKey>("plays");
 
   const publishedDailyData = useMemo(() => {
@@ -150,24 +180,18 @@ export default function Home() {
     });
     return [...grouped.values()].sort((a, b) => a.date.localeCompare(b.date));
   }, []);
-  const latestDate = publishedDailyData.at(-1)!.date;
-  const cutoffDate = useMemo(() => {
-    if (range === "all") return publishedDailyData[0].date;
-    const date = new Date(`${latestDate}T00:00:00Z`);
-    date.setUTCDate(date.getUTCDate() - Number(range) + 1);
-    return date.toISOString().slice(0, 10);
-  }, [latestDate, publishedDailyData, range]);
+  const activeQuarter = quarterRanges[range];
   const current = useMemo(
-    () => publishedDailyData.filter((item) => item.date >= cutoffDate),
-    [cutoffDate, publishedDailyData],
+    () => publishedDailyData.filter((item) => item.date >= activeQuarter.start && item.date <= activeQuarter.end),
+    [activeQuarter, publishedDailyData],
   );
   const currentContent = useMemo(
-    () => contentData.filter((item) => item.date >= cutoffDate),
-    [cutoffDate],
+    () => contentData.filter((item) => item.date >= activeQuarter.start && item.date <= activeQuarter.end),
+    [activeQuarter],
   );
   const totals = useMemo(
-    () => Object.fromEntries(metricOrder.map((key) => [key, sum(current, key)])) as Record<MetricKey, number>,
-    [current],
+    () => Object.fromEntries(metricOrder.map((key) => [key, sum(current, key) + (quarterAdjustments[range][key] ?? 0)])) as Record<MetricKey, number>,
+    [current, range],
   );
   const engagement = ((totals.recommends + totals.likes + totals.comments + totals.shares) / totals.plays) * 100;
   const followRate = (totals.follows / totals.plays) * 100;
@@ -178,7 +202,7 @@ export default function Home() {
 
   const months = useMemo(() => {
     const grouped = new Map<string, DailyMetric[]>();
-    publishedDailyData.forEach((item) => {
+    current.forEach((item) => {
       const month = item.date.slice(0, 7);
       grouped.set(month, [...(grouped.get(month) ?? []), item]);
     });
@@ -194,7 +218,7 @@ export default function Home() {
         follows: sum(items, "follows"),
       };
     });
-  }, [publishedDailyData]);
+  }, [current]);
   const maxDaily = Math.max(...months.map((item) => item.daily));
 
   return (
@@ -222,7 +246,7 @@ export default function Home() {
             <p className="hero-copy">用播放、互动与关注转化，识别真正带来账号增长的高价值日期。</p>
           </div>
           <div className="range-switch" aria-label="看板数据范围">
-            {(["7", "30", "all"] as RangeKey[]).map((key) => (
+            {(["Q2", "Q3", "Q4"] as RangeKey[]).map((key) => (
               <button
                 type="button"
                 key={key}
@@ -230,15 +254,15 @@ export default function Home() {
                 aria-pressed={range === key}
                 onClick={() => setRange(key)}
               >
-                {key === "all" ? "全周期" : `近${key}天`}
+                {key}
               </button>
             ))}
           </div>
         </section>
 
         <section className="period-strip">
-          <span>{range === "all" ? "发布内容·完整周期" : `发布内容·近${range}天`}</span>
-          <strong>{shortDate(current[0].date)} — {shortDate(current.at(-1)!.date)}</strong>
+          <span>{range === "Q4" ? `${range}·阶段数据` : `${range}·完整季度`}</span>
+          <strong>{activeQuarter.period}</strong>
           <em>{currentContent.length}条发布内容 · 指标和图表已同步联动</em>
         </section>
       </div>
@@ -255,13 +279,13 @@ export default function Home() {
               onClick={() => setMetric(key)}
             >
               <div className="kpi-title">
-                <span>{key === "follows" ? "粉丝数" : metricMeta[key].label}</span>
+                <span>{key === "follows" ? "关注人数" : metricMeta[key].label}</span>
                 <i style={{ background: metricMeta[key].color }}>{metricMeta[key].short}</i>
               </div>
               <strong>{number.format(totals[key])}</strong>
               <div className="kpi-foot">
                 <span>{currentContent.length}条内容累计</span>
-                <b>{range === "all" ? "全周期" : `近${range}天`}</b>
+                <b>{range}</b>
               </div>
             </button>
           );
@@ -331,7 +355,7 @@ export default function Home() {
               <p className="section-kicker">MONTHLY COMPARISON</p>
               <h2>月度效率对比</h2>
             </div>
-            <span className="subtle-note">4月、10月为阶段数据，优先比较日均</span>
+            <span className="subtle-note">{range === "Q4" ? "Q4为10月1—26日阶段数据" : `${range}完整季度`}</span>
           </div>
           <div className="month-chart">
             {months.map((item) => (
@@ -400,14 +424,14 @@ export default function Home() {
 
       <section className="insights">
         <div className="insight-title"><p className="section-kicker">ACTIONABLE INSIGHTS</p><h2>下一步怎么做</h2></div>
-        <article><span>01</span><h3>放大10月21日的新剧集模板</h3><p>这一天是近30天播放和关注双峰值，建议继续沿用鲜明人设、明确金额冲突和集数标识。</p></article>
-        <article><span>02</span><h3>稳定霸总系列的关注转化</h3><p>霸总类剧情在7—9月多次带来关注，适合固定角色关系、封面视觉和连载节奏。</p></article>
-        <article><span>03</span><h3>调整AI财务系列的单集结构</h3><p>9月下旬后AI财务系列播放走低，需要缩短铺垫，把风险冲突和解决结果更早放到开场。</p></article>
+        {quarterInsights[range].map(([title, detail], index) => (
+          <article key={title}><span>0{index + 1}</span><h3>{title}</h3><p>{detail}</p></article>
+        ))}
       </section>
 
       <footer>
         <span>统计口径：按视频发布日期归集单篇累计表现 · 数据截至2026.10.26</span>
-        <span>数据来源：视频号后台导出 · 指标可能存在约1%的平台统计误差</span>
+        <span>数据来源：视频号后台导出 · Q4关注、点赞和推荐采用平台总览校准值</span>
       </footer>
     </main>
   );
