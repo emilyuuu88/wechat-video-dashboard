@@ -6,7 +6,12 @@ import { contentData } from "./content/content-data";
 
 type RangeKey = "Q2" | "Q3" | "Q4";
 type MetricKey = Exclude<keyof DailyMetric, "date">;
-type ComparisonMetric = "plays" | "follows" | "recommends" | "likes";
+type ComparisonMetric = "contents" | "plays" | "follows" | "recommends" | "likes";
+type QuarterComparisonItem = {
+  quarter: RangeKey;
+  period: string;
+  values: Record<MetricKey, number> & { contents: number };
+};
 
 const quarterRanges: Record<RangeKey, { start: string; end: string; period: string }> = {
   Q2: { start: "2026-04-01", end: "2026-06-30", period: "04.01 — 06.30" },
@@ -48,6 +53,14 @@ const metricMeta: Record<
   comments: { label: "评论", short: "评", color: "var(--red)" },
   shares: { label: "分享", short: "享", color: "var(--gold)" },
   follows: { label: "关注", short: "关", color: "var(--green)" },
+};
+
+const comparisonMeta: Record<ComparisonMetric, { label: string; color: string }> = {
+  contents: { label: "发布数", color: "#0a84ff" },
+  plays: { label: "播放", color: "var(--orange)" },
+  follows: { label: "涨粉", color: "var(--green)" },
+  recommends: { label: "推荐", color: "var(--purple)" },
+  likes: { label: "喜欢", color: "var(--blue)" },
 };
 
 const metricOrder: MetricKey[] = [
@@ -164,7 +177,7 @@ function QuarterComparisonChart({
   data,
   metric,
 }: {
-  data: Array<{ quarter: RangeKey; period: string; values: Record<MetricKey, number> }>;
+  data: QuarterComparisonItem[];
   metric: ComparisonMetric;
 }) {
   const width = 1000;
@@ -186,11 +199,11 @@ function QuarterComparisonChart({
   const area = `${line} L${points.at(-1)!.x},${top + plotH} L${points[0].x},${top + plotH} Z`;
 
   return (
-    <svg className="quarter-compare-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Q2至Q4${metricMeta[metric].label}对比折线图`}>
+    <svg className="quarter-compare-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Q2至Q4${comparisonMeta[metric].label}对比折线图`}>
       <defs>
         <linearGradient id="quarterArea" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={metricMeta[metric].color} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={metricMeta[metric].color} stopOpacity="0" />
+          <stop offset="0%" stopColor={comparisonMeta[metric].color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={comparisonMeta[metric].color} stopOpacity="0" />
         </linearGradient>
       </defs>
       {[0, 0.5, 1].map((ratio) => {
@@ -198,10 +211,10 @@ function QuarterComparisonChart({
         return <line key={ratio} className="grid-line" x1={left} x2={left + plotW} y1={y} y2={y} />;
       })}
       <path d={area} fill="url(#quarterArea)" />
-      <path d={line} fill="none" stroke={metricMeta[metric].color} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={line} fill="none" stroke={comparisonMeta[metric].color} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
       {points.map((point, index) => (
         <g key={point.quarter} className="quarter-point">
-          <circle cx={point.x} cy={point.y} r="12" fill="white" stroke={metricMeta[metric].color} strokeWidth="6" />
+          <circle cx={point.x} cy={point.y} r="12" fill="white" stroke={comparisonMeta[metric].color} strokeWidth="6" />
           <text className="quarter-point-value" x={point.x} y={point.y - 25} textAnchor="middle">{number.format(point.value)}</text>
           <text className="quarter-point-label" x={point.x} y={height - 27} textAnchor="middle">{point.quarter}</text>
           <text className="quarter-point-period" x={point.x} y={height - 10} textAnchor="middle">{point.period}{index === 2 ? " · 阶段" : ""}</text>
@@ -277,7 +290,10 @@ export default function Home() {
     () => (["Q2", "Q3", "Q4"] as RangeKey[]).map((quarter) => {
       const quarterRange = quarterRanges[quarter];
       const items = publishedDailyData.filter((item) => item.date >= quarterRange.start && item.date <= quarterRange.end);
-      const values = Object.fromEntries(metricOrder.map((key) => [key, sum(items, key) + (quarterAdjustments[quarter][key] ?? 0)])) as Record<MetricKey, number>;
+      const values = {
+        ...Object.fromEntries(metricOrder.map((key) => [key, sum(items, key) + (quarterAdjustments[quarter][key] ?? 0)])) as Record<MetricKey, number>,
+        contents: contentData.filter((item) => item.date >= quarterRange.start && item.date <= quarterRange.end).length,
+      };
       return { quarter, period: quarterRange.period, values };
     }),
     [publishedDailyData],
@@ -362,10 +378,10 @@ export default function Home() {
             <p className="quarter-compare-copy">在同一张图里查看播放与涨粉走势，Q4为截至10月26日的阶段表现。</p>
           </div>
           <div className="metric-switch" aria-label="季度对比指标">
-            {(["plays", "follows", "recommends", "likes"] as ComparisonMetric[]).map((key) => (
+            {(["contents", "plays", "follows", "recommends", "likes"] as ComparisonMetric[]).map((key) => (
               <button key={key} type="button" className={comparisonMetric === key ? "active" : ""} aria-pressed={comparisonMetric === key} onClick={() => setComparisonMetric(key)}>
-                <i style={{ background: metricMeta[key].color }} />
-                {key === "follows" ? "涨粉" : metricMeta[key].label}
+                <i style={{ background: comparisonMeta[key].color }} />
+                {comparisonMeta[key].label}
               </button>
             ))}
           </div>
@@ -377,7 +393,7 @@ export default function Home() {
             const change = previous ? ((item.values[comparisonMetric] - previous) / previous) * 100 : null;
             return (
               <button type="button" key={item.quarter} className={range === item.quarter ? "active" : ""} onClick={() => setRange(item.quarter)}>
-                <span>{item.quarter}{item.quarter === "Q4" ? " 阶段" : " 完整季度"}</span>
+                <span>{item.quarter}{item.quarter === "Q4" ? " 阶段" : " 完整季度"} · 发布 {item.values.contents} 条</span>
                 <strong>{number.format(item.values[comparisonMetric])}</strong>
                 <small>{change === null ? "起始基准" : `${change >= 0 ? "+" : ""}${change.toFixed(1)}% 较上季度`}</small>
               </button>
