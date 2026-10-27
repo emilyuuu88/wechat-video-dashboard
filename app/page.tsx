@@ -11,6 +11,7 @@ type QuarterComparisonItem = {
   quarter: RangeKey;
   period: string;
   values: Record<MetricKey, number> & { contents: number };
+  maxPlays: number;
 };
 
 const quarterRanges: Record<RangeKey, { start: string; end: string; period: string }> = {
@@ -294,7 +295,7 @@ export default function Home() {
         ...Object.fromEntries(metricOrder.map((key) => [key, sum(items, key) + (quarterAdjustments[quarter][key] ?? 0)])) as Record<MetricKey, number>,
         contents: contentData.filter((item) => item.date >= quarterRange.start && item.date <= quarterRange.end).length,
       };
-      return { quarter, period: quarterRange.period, values };
+      return { quarter, period: quarterRange.period, values, maxPlays: Math.max(...items.map((item) => item.plays), 0) };
     }),
     [publishedDailyData],
   );
@@ -396,6 +397,11 @@ export default function Home() {
                 <span>{item.quarter}{item.quarter === "Q4" ? " 阶段" : " 完整季度"} · 发布 {item.values.contents} 条</span>
                 <strong>{number.format(item.values[comparisonMetric])}</strong>
                 <small>{change === null ? "起始基准" : `${change >= 0 ? "+" : ""}${change.toFixed(1)}% 较上季度`}</small>
+                <div className="quarter-card-detail">
+                  <span><i>累计播放</i><b>{number.format(item.values.plays)}</b></span>
+                  <span><i>单篇最高</i><b>{number.format(item.maxPlays)}</b></span>
+                  <span><i>累计点赞</i><b>{number.format(item.values.likes)}</b></span>
+                </div>
               </button>
             );
           })}
