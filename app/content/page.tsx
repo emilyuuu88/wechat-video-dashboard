@@ -186,6 +186,18 @@ export default function ContentAnalysis() {
   const palaceSeries = contentData.filter((item) => item.category === "太子妃系列");
   const bossSeries = contentData.filter((item) => item.category === "霸总系列" || item.title.includes("霸总") || item.title.includes("霸道总裁"));
   const aiSeries = contentData.filter((item) => item.category === "AI财务系列" || item.title.includes("AI财务") || item.title.includes("AI入职天庭财务司"));
+  const seriesSpotlight = [
+    { name: "《背锅侠》系列", items: backSeries, tone: "back" },
+    { name: "《太子妃》系列", items: palaceSeries, tone: "palace" },
+    { name: "《霸总》系列", items: bossSeries, tone: "boss" },
+    { name: "《AI财务》系列", items: aiSeries, tone: "ai" },
+  ].map((series) => {
+    const plays = sum(series.items, "plays");
+    const follows = sum(series.items, "follows");
+    const hits = series.items.filter((item) => item.plays >= hitThreshold);
+    const topHit = [...series.items].sort((a, b) => b.plays - a.plays)[0];
+    return { ...series, plays, follows, hits, topHit };
+  }).sort((a, b) => b.hits.length - a.hits.length || b.plays - a.plays);
   const allFollows = 443;
   const palaceFollows = sum(palaceSeries, "follows");
   const palaceFollowShare = palaceFollows / Math.max(allFollows, 1) * 100;
@@ -258,8 +270,29 @@ export default function ContentAnalysis() {
         </aside>
       </section>
 
+      <section className="series-spotlight">
+        <div className="series-heading"><div><p className="section-kicker">SERIES HIT LIST</p><h2>系列爆款榜</h2></div><span>爆款口径：单篇播放 ≥ {number.format(hitThreshold)} · 代表作取系列播放最高单篇</span></div>
+        <div className="series-spotlight-grid">
+          {seriesSpotlight.map((series, index) => (
+            <article className={`series-spotlight-card ${index === 0 ? "leader" : ""}`} key={series.name}>
+              <div className="spotlight-rank"><span>0{index + 1}</span><b>{series.hits.length} 条爆款</b></div>
+              <h3>{series.name}</h3>
+              <div className="spotlight-metrics">
+                <div><span>系列播放</span><strong>{number.format(series.plays)}</strong></div>
+                <div><span>新增关注</span><strong>+{series.follows}</strong></div>
+              </div>
+              <div className="spotlight-hit">
+                <span>{series.hits.length ? "代表爆款" : "系列最高播放"}</span>
+                <p>{series.topHit?.title ?? "暂无内容"}</p>
+                <b>{series.topHit ? `${number.format(series.topHit.plays)} 播放` : "—"}</b>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="series-section">
-        <div className="series-heading"><div><p className="section-kicker">SERIES COMPARISON</p><h2>四条系列内容的增长能力</h2></div><span>爆款口径：单篇播放 ≥ {number.format(hitThreshold)}</span></div>
+        <div className="series-heading"><div><p className="section-kicker">SERIES COMPARISON</p><h2>系列完整表现</h2></div><span>查看内容数、篇均播放、互动率与关注转化</span></div>
         <SeriesCard items={backSeries} className="back-series" eyebrow="职场悬疑连续剧" title="《背锅侠》系列" />
         <SeriesCard items={palaceSeries} className="palace-series" eyebrow="古装财务短剧" title="《太子妃》系列" />
         <SeriesCard items={bossSeries} className="boss-series" eyebrow="霸总财务剧情" title="《霸总》系列" />
